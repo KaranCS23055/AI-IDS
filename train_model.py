@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 import joblib
 import os
@@ -19,22 +19,22 @@ def generate_synthetic_data(n_samples=1000):
     # Normal traffic
     normal_samples = n_samples // 2
     normal_data = {
-        'duration': np.random.exponential(scale=1, size=normal_samples),
-        'src_bytes': np.random.normal(loc=500, scale=100, size=normal_samples),
-        'dst_bytes': np.random.normal(loc=500, scale=100, size=normal_samples),
-        'count': np.random.randint(1, 10, size=normal_samples),
-        'serror_rate': np.random.uniform(0, 0.1, size=normal_samples),
+        'duration': np.random.exponential(scale=1.5, size=normal_samples),
+        'src_bytes': np.random.normal(loc=1500, scale=800, size=normal_samples),
+        'dst_bytes': np.random.normal(loc=1500, scale=800, size=normal_samples),
+        'count': np.random.randint(1, 50, size=normal_samples),
+        'serror_rate': np.random.uniform(0, 0.4, size=normal_samples),
         'label': 0
     }
     
     # Attack traffic (e.g., DoS)
     attack_samples = n_samples // 2
     attack_data = {
-        'duration': np.random.exponential(scale=0.1, size=attack_samples),
-        'src_bytes': np.random.normal(loc=10000, scale=2000, size=attack_samples),
-        'dst_bytes': np.random.normal(loc=100, scale=50, size=attack_samples),
-        'count': np.random.randint(100, 500, size=attack_samples),
-        'serror_rate': np.random.uniform(0.8, 1.0, size=attack_samples),
+        'duration': np.random.exponential(scale=0.5, size=attack_samples),
+        'src_bytes': np.random.normal(loc=5000, scale=2500, size=attack_samples),
+        'dst_bytes': np.random.normal(loc=500, scale=300, size=attack_samples),
+        'count': np.random.randint(30, 300, size=attack_samples),
+        'serror_rate': np.random.uniform(0.3, 1.0, size=attack_samples),
         'label': 1
     }
     
@@ -57,7 +57,7 @@ def train():
     
     X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
     
-    model = GaussianNB()
+    model = RandomForestClassifier(n_estimators=50, max_depth=5, min_samples_leaf=5, random_state=42)
     model.fit(X_train, y_train)
     
     accuracy = model.score(X_test, y_test)
