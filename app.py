@@ -7,8 +7,9 @@ from datetime import datetime
 app = Flask(__name__)
 
 # Load model and scaler
-model = joblib.load('models/ids_model.pkl')
-scaler = joblib.load('models/scaler.pkl')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model = joblib.load(os.path.join(BASE_DIR, 'models', 'ids_model.pkl'))
+scaler = joblib.load(os.path.join(BASE_DIR, 'models', 'scaler.pkl'))
 
 # Statistics tracker
 stats = {
