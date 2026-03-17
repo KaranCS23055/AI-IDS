@@ -95,13 +95,79 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.status === 'success') {
             showResult(data.prediction, data.confidence);
             updateStats();
+            getAIExplanation(data.prediction, data.confidence, payload);
         }
     });
 
+    async function getAIExplanation(prediction, confidence, features) {
+        const explanationEl = document.getElementById('ai-explanation');
+        const cardEl = explanationEl.closest('.ai-intelligence-card');
+        
+        explanationEl.innerHTML = '<span class="loading-dots" style="opacity: 0.7;">🤖 Interrogating neural patterns</span>';
+        explanationEl.style.borderLeftColor = 'var(--accent)';
+        cardEl.style.boxShadow = '0 0 30px rgba(139, 92, 246, 0.3)';
+        
+        const payloadArgs = [
+            features.duration,
+            features.src_bytes,
+            features.dst_bytes,
+            features.count,
+            features.serror_rate
+        ];
+
+        try {
+            const res = await fetch('/explain', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prediction: prediction,
+                    confidence: confidence,
+                    features: payloadArgs
+                })
+            });
+            const data = await res.json();
+            
+            if (data.explanation.includes('❌ AI Service Error')) {
+                explanationEl.innerHTML = `<span style="color: var(--warning); font-size: 0.85rem;">${data.explanation}</span>`;
+                return;
+            }
+
+            // Typewriter effect
+            typeWriter(data.explanation, explanationEl, prediction);
+            
+        } catch (e) {
+            explanationEl.innerHTML = '<span style="color: var(--danger);">Quantum uplink failed. Manual review recommended.</span>';
+        }
+    }
+
+    function typeWriter(text, element, prediction) {
+        element.innerHTML = '';
+        element.classList.add('typing-effect');
+        let i = 0;
+        
+        // Final color determined by outcome
+        const finalColor = prediction === 'Attack' ? 'var(--danger)' : 'var(--success)';
+        element.style.borderLeftColor = finalColor;
+
+        function type() {
+            if (i < text.length) {
+                // Handling bold markers **
+                let currentText = text.substring(0, i + 1);
+                element.innerHTML = currentText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                i++;
+                setTimeout(type, 15);
+            } else {
+                element.classList.remove('typing-effect');
+                element.closest('.ai-intelligence-card').style.boxShadow = '';
+            }
+        }
+        type();
+    }
+
     function showResult(prediction, confidence) {
         overlay.style.display = 'block';
-        overlayResult.textContent = prediction;
-        overlayConf.textContent = `Confidence: ${confidence}%`;
+        overlayResult.innerHTML = `<span style="font-size: 0.8rem; opacity: 0.7; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px;">AI Verified Outcome</span>${prediction}`;
+        overlayConf.textContent = `Confidence Matrix: ${confidence}%`;
 
         if (prediction === 'Attack') {
             overlay.style.background = 'rgba(255, 75, 43, 0.4)';
