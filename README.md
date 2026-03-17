@@ -1,5 +1,7 @@
 # AI-Based Intrusion Detection System (IDS)
 
+🚀 **Live Demo:** [https://ai-ids-system.vercel.app/](https://ai-ids-system.vercel.app/)
+
 An AI-powered Intrusion Detection System built using Machine Learning and a Flask web backend. It analyzes network packet features to predict whether the traffic is "Normal" or a potential "Attack".
 
 ## Features
